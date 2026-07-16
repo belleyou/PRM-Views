@@ -1,0 +1,100 @@
+{
+  "manifest_version": 3,
+  "name": "Live PRM Partner Experience Sandbox Modifier",
+  "short_name": "PRM Sandbox",
+  "version": "0.1.0",
+  "description": "Overlay and switch Salesforce Experience Cloud partner personas in sandbox and staging environments, with split-screen persona comparison.",
+  "minimum_chrome_version": "116",
+  "action": {
+    "default_title": "PRM Partner Sandbox Modifier",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "32": "assets/icon-32.png",
+      "48": "assets/icon-48.png",
+      "128": "assets/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icon-16.png",
+    "32": "assets/icon-32.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "cookies",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*.force.com/*",
+    "https://*.my.site.com/*",
+    "https://*.sandbox.my.site.com/*",
+    "https://*.salesforce-sites.com/*",
+    "https://*.sandbox.my.salesforce-sites.com/*",
+    "https://*.salesforce.com/*",
+    "https://*.my.salesforce.com/*",
+    "https://*.salesforce-setup.com/*",
+    "https://*.my.salesforce-setup.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*/*",
+        "https://*.force.com/*",
+        "https://*.my.site.com/*",
+        "https://*.sandbox.my.site.com/*",
+        "https://*.salesforce-sites.com/*",
+        "https://*.sandbox.my.salesforce-sites.com/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ],
+      "js": [
+        "src/content/persona-injector.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "prm_static_rules",
+        "enabled": true,
+        "path": "rules/dynamic-rules.json"
+      }
+    ]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/content/split-screen.js",
+        "src/shared/constants.js",
+        "src/shared/storage.js",
+        "assets/icon-16.png",
+        "assets/icon-32.png",
+        "assets/icon-48.png",
+        "assets/icon-128.png"
+      ],
+      "matches": [
+        "https://*/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; frame-src https://* http://localhost http://127.0.0.1;"
+  }
+}

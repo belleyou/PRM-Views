@@ -1,0 +1,1 @@
+Preview Salesforce Experience Cloud partner personas in single, two-pane, three-pane, or four-pane sandbox views.

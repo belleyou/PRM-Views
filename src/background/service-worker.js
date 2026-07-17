@@ -708,10 +708,6 @@ function getHttpsOrigin(urlValue) {
   }
 }
 
-function escapeRegex(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 function normalizePersona(persona) {
   if (!persona || typeof persona !== "object") {
     throw new Error("Persona payload is required.");

@@ -25,7 +25,7 @@
     injectStyles();
     removeSplitScreen();
 
-    const currentUrl = new URL(window.location.href);
+    const currentUrl = normalizeExperienceCloudUrl(new URL(window.location.href));
     const root = document.createElement("section");
     root.id = ROOT_ID;
     root.setAttribute("aria-label", "PRM split-screen persona comparison");
@@ -65,7 +65,16 @@
     pane.className = "prm-split-pane";
 
     const header = document.createElement("header");
-    header.textContent = `${label}: ${personaId}`;
+    const title = document.createElement("span");
+    title.textContent = `${label}: ${personaId}`;
+    header.append(title);
+
+    if (isLikelyFrameBlockedUrl(url)) {
+      pane.classList.add("is-blocked");
+      const fallback = createBlockedFrameMessage(url);
+      pane.append(header, fallback);
+      return pane;
+    }
 
     const frame = document.createElement("iframe");
     frame.src = url.toString();
@@ -81,6 +90,44 @@
     url.searchParams.set("prmPersona", personaId);
     url.searchParams.set("prmSplitPreview", "1");
     return url;
+  }
+
+  function normalizeExperienceCloudUrl(currentUrl) {
+    const url = new URL(currentUrl.href);
+
+    if (url.hostname.endsWith(".builder.salesforce-experience.com")) {
+      url.hostname = url.hostname.replace(".builder.salesforce-experience.com", ".my.site.com");
+    }
+
+    return url;
+  }
+
+  function isLikelyFrameBlockedUrl(url) {
+    const hostname = url.hostname;
+    return hostname.endsWith(".builder.salesforce-experience.com") ||
+      hostname.endsWith(".salesforce-setup.com") ||
+      hostname.endsWith(".my.salesforce-setup.com") ||
+      hostname.endsWith(".lightning.force.com");
+  }
+
+  function createBlockedFrameMessage(url) {
+    const fallback = document.createElement("div");
+    fallback.className = "prm-frame-fallback";
+
+    const title = document.createElement("strong");
+    title.textContent = "This Salesforce page blocks embedded previews";
+
+    const body = document.createElement("p");
+    body.textContent = "Open the published Experience Cloud site, then run Split-Screen again. Builder and Setup pages often refuse iframe rendering.";
+
+    const link = document.createElement("a");
+    link.href = url.toString();
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.textContent = "Open target page";
+
+    fallback.append(title, body, link);
+    return fallback;
   }
 
   function removeSplitScreen() {
@@ -169,6 +216,8 @@
       #${ROOT_ID} .prm-split-pane header {
         display: flex;
         align-items: center;
+        justify-content: space-between;
+        gap: 8px;
         padding: 0 12px;
         border-bottom: 1px solid #dce2ea;
         color: #697386;
@@ -181,6 +230,51 @@
         height: 100%;
         border: 0;
         background: #ffffff;
+      }
+
+      #${ROOT_ID} .prm-split-pane.is-blocked {
+        grid-template-rows: 34px 1fr;
+      }
+
+      #${ROOT_ID} .prm-frame-fallback {
+        display: grid;
+        align-content: center;
+        justify-items: center;
+        gap: 12px;
+        padding: 28px;
+        color: #18202f;
+        text-align: center;
+        background:
+          linear-gradient(180deg, rgba(18, 94, 201, 0.07), rgba(18, 94, 201, 0)),
+          #ffffff;
+      }
+
+      #${ROOT_ID} .prm-frame-fallback strong {
+        max-width: 360px;
+        font-size: 16px;
+        line-height: 1.25;
+      }
+
+      #${ROOT_ID} .prm-frame-fallback p {
+        max-width: 440px;
+        margin: 0;
+        color: #697386;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      #${ROOT_ID} .prm-frame-fallback a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 0 14px;
+        border-radius: 8px;
+        color: #ffffff;
+        background: #0c428d;
+        font-size: 12px;
+        font-weight: 850;
+        text-decoration: none;
       }
     `;
 
